@@ -33,9 +33,16 @@ const NoteSchema = new Schema<NoteDocument>(
   { timestamps: true }
 );
 
+// Compound indexes for common queries
 NoteSchema.index({ workspaceId: 1, title: 1 });
 NoteSchema.index({ type: 1, isDraft: 1, createdAt: -1 });
-NoteSchema.index({ upvotes: -1 });
-NoteSchema.index({ downvotes: -1 });
+NoteSchema.index({ type: 1, isDraft: 1, upvotes: -1 });
+NoteSchema.index({ type: 1, isDraft: 1, downvotes: -1 });
+
+// Text index for full-text search on title (faster than regex)
+NoteSchema.index({ title: "text" });
+
+// Compound text + filter index for public notes search
+NoteSchema.index({ type: 1, isDraft: 1, title: 1 });
 
 export const Note = model<NoteDocument>("Note", NoteSchema);

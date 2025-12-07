@@ -8,6 +8,7 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed:large": "ts-node-dev --transpile-only ./src/scripts/seedLarge.ts",
+    "rebuild:indexes": "ts-node-dev --transpile-only ./src/scripts/rebuildIndexes.ts",
     "vercel-build": "tsc"
   },
   "keywords": [],

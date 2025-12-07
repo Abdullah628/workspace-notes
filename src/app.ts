@@ -4,11 +4,17 @@ import express, { Request, Response } from "express";
 import { envVars } from "./config/env";
 import notFound from "./middleware/notFound";
 import { globalErrorHandler } from "./middleware/globalErrorHandler";
+import { requestPerformanceLogger, slowQueryAlert } from "./middleware/queryPerformance";
 
 import { router } from "./routes/index";
 
 
 const app = express()
+
+// Performance monitoring middleware
+app.use(requestPerformanceLogger)
+app.use(slowQueryAlert(1000)) // Alert if request takes more than 1000ms
+
 app.use(cookieParser())
 app.use(cors({
     origin: envVars.FRONTEND_URL,

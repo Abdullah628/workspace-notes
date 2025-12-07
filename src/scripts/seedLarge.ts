@@ -25,16 +25,17 @@ async function run() {
   
   for (let i = 0; i < 50; i++) {
     // Step 1: Create company (auto-created during registration)
-    const company = await Company.create({ name: `Company ${i+1}` });
+    const domain = `company${i+1}.com`;
+    const company = await Company.create({ name: `Company ${i+1}`, domain });
 
     // Step 2: Create owner (first user who registered)
     const owner = await User.create({
       company: company._id,
       name: `${pick(names)} Owner`,
-      email: `owner@company${i+1}.com`,
+      email: `owner@${domain}`,
       password: hashedPassword,
       role: "OWNER",
-      auths: [{ provider: "credentials", providerId: `owner@company${i+1}.com` }],
+      auths: [{ provider: "credentials", providerId: `owner@${domain}` }],
     });
 
     const users = [owner._id];
@@ -45,10 +46,10 @@ async function run() {
       const member = await User.create({
         company: company._id,
         name: `${pick(names)} ${j+1}`,
-        email: `member${j}@company${i+1}.com`,
+        email: `member${j}@${domain}`,
         password: hashedPassword,
         role: "MEMBER",
-        auths: [{ provider: "credentials", providerId: `member${j}@company${i+1}.com` }],
+        auths: [{ provider: "credentials", providerId: `member${j}@${domain}` }],
       });
       users.push(member._id);
     }

@@ -42,22 +42,58 @@ const updateNote = async (
 
 const listWorkspaceNotes = async (workspaceId: string, titleQuery?: string) => {
   const filter: any = { workspaceId };
-  if (titleQuery) filter.title = { $regex: titleQuery, $options: "i" };
-  return Note.find(filter).sort({ updatedAt: -1 }).limit(100);
+  
+  // Use text search for better performance
+  if (titleQuery) {
+    filter.$text = { $search: titleQuery };
+  }
+  
+  const sortOpt: any = titleQuery 
+    ? { score: { $meta: "textScore" }, updatedAt: -1 } 
+    : { updatedAt: -1 };
+  
+  const query = Note.find(filter).sort(sortOpt).limit(100);
+  
+  if (titleQuery) {
+    query.select({ score: { $meta: "textScore" } });
+  }
+  
+  return query;
 };
 
 const listPublicNotes = async (titleQuery?: string, sort?: string) => {
   const filter: any = { type: "public", isDraft: false };
-  if (titleQuery) filter.title = { $regex: titleQuery, $options: "i" };
+  
+  // Use text search for better performance when searching
+  if (titleQuery) {
+    // Text search is much faster than regex on large datasets
+    filter.$text = { $search: titleQuery };
+  }
 
   let sortOpt: any = { createdAt: -1 };
   if (sort === "old") sortOpt = { createdAt: 1 };
-  if (sort === "upvotes") sortOpt = { upvotes: -1 };
-  if (sort === "downvotes") sortOpt = { downvotes: -1 };
+  if (sort === "upvotes") sortOpt = { upvotes: -1, createdAt: -1 };
+  if (sort === "downvotes") sortOpt = { downvotes: -1, createdAt: -1 };
 
-  console.log("Filter:", filter, "Sort Option:", sortOpt);
+  // If using text search, add text score to sort
+  if (titleQuery) {
+    sortOpt = { score: { $meta: "textScore" }, ...sortOpt };
+  }
 
-  return Note.find(filter).sort(sortOpt).limit(100);
+  const startTime = Date.now();
+  const query = Note.find(filter).sort(sortOpt).limit(100);
+  
+  // Project text score if doing text search
+  if (titleQuery) {
+    query.select({ score: { $meta: "textScore" } });
+  }
+  
+  const results = await query;
+  const duration = Date.now() - startTime;
+  
+  console.log(`🔍 Public notes query took ${duration}ms for ${results.length} results`);
+  
+  return results;
 };
 
 const deleteNote = async (id: string) => {

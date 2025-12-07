@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import app from "./app";
 import { envVars } from "./config/env";
 import { startHistoryRetentionJob } from "./jobs/historyRetention";
+import { enableMongooseDebug } from "./middleware/queryPerformance";
 
 let server: http.Server;
 
@@ -13,6 +14,13 @@ const startServer = async () => {
     await mongoose.connect(envVars.DB_URL);
 
     console.log("Connected to DB!!");
+    
+    // Enable MongoDB query logging (comment out in production)
+    // if (envVars.NODE_ENV === "development") {
+      enableMongooseDebug();
+      console.log("📊 MongoDB query profiling enabled");
+    // }
+    
     startHistoryRetentionJob();
 
     // Create HTTP server
