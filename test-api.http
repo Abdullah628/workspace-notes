@@ -1,0 +1,106 @@
+### Register User (Auto-creates Company)
+POST http://localhost:5000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "companyName": "Test Company",
+  "name": "Test User",
+  "email": "test@test.com",
+  "password": "Password1!"
+}
+
+###
+
+### Login
+POST http://localhost:5000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "Password1!"
+}
+
+###
+
+### Get My Profile
+GET http://localhost:5000/api/v1/user/me
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Get My Company
+GET http://localhost:5000/api/v1/companies/my
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Create Workspace (OWNER only)
+POST http://localhost:5000/api/v1/workspaces
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Engineering Team",
+  "description": "Main engineering workspace"
+}
+
+###
+
+### Get My Workspaces
+GET http://localhost:5000/api/v1/workspaces/my
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Create Note (Draft)
+POST http://localhost:5000/api/v1/notes
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "workspaceId": "{{workspaceId}}",
+  "title": "Test Note",
+  "content": "This is a test note in draft mode",
+  "tags": ["test", "draft"],
+  "type": "private",
+  "isDraft": true
+}
+
+###
+
+### Publish Note (Make Public)
+PATCH http://localhost:5000/api/v1/notes/{{noteId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "type": "public",
+  "isDraft": false
+}
+
+###
+
+### Get Public Directory
+GET http://localhost:5000/api/v1/notes/public-directory?sort=upvotes
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Vote on Note
+POST http://localhost:5000/api/v1/votes
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "noteId": "{{noteId}}",
+  "voterUserId": "{{userId}}",
+  "type": "up"
+}
+
+###
+
+### Get Note History
+GET http://localhost:5000/api/v1/history/note/{{noteId}}
+Authorization: Bearer {{accessToken}}
+
+###
