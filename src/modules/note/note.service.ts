@@ -55,7 +55,24 @@ const listPublicNotes = async (titleQuery?: string, sort?: string) => {
   if (sort === "upvotes") sortOpt = { upvotes: -1 };
   if (sort === "downvotes") sortOpt = { downvotes: -1 };
 
+  console.log("Filter:", filter, "Sort Option:", sortOpt);
+
   return Note.find(filter).sort(sortOpt).limit(100);
+};
+
+const deleteNote = async (id: string) => {
+  const note = await Note.findById(id);
+  if (!note) {
+    throw new AppError(httpStatus.NOT_FOUND, "Note not found");
+  }
+  
+  // Delete associated history
+  await NoteHistory.deleteMany({ noteId: id });
+  
+  // Delete note
+  await Note.findByIdAndDelete(id);
+  
+  return note;
 };
 
 export const NoteServices = {
@@ -64,4 +81,5 @@ export const NoteServices = {
   updateNote,
   listWorkspaceNotes,
   listPublicNotes,
+  deleteNote,
 };

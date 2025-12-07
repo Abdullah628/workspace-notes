@@ -59,6 +59,7 @@ const listWorkspaceNotes = catchAsync(async (req: Request, res: Response) => {
 
 const listPublicNotes = catchAsync(async (req: Request, res: Response) => {
   const { q, sort } = req.query as { q?: string; sort?: string };
+  console.log("Query Parameters:", req.query);
   const notes = await NoteServices.listPublicNotes(q, sort);
   sendResponse(res, {
     success: true,
@@ -88,6 +89,29 @@ const restoreHistory = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteNote = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const decodedToken = req.user as JwtPayload;
+  
+  // Check if user is OWNER
+  if (decodedToken.role !== "OWNER") {
+    return sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.FORBIDDEN,
+      message: "Only OWNER can delete notes",
+      data: null,
+    });
+  }
+  
+  const note = await NoteServices.deleteNote(id);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Note Deleted Successfully",
+    data: note,
+  });
+});
+
 export const NoteControllers = {
   createNote,
   getNote,
@@ -95,4 +119,5 @@ export const NoteControllers = {
   listWorkspaceNotes,
   listPublicNotes,
   restoreHistory,
+  deleteNote,
 };

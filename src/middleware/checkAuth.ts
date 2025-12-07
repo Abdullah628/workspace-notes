@@ -55,7 +55,7 @@ export const checkAuth =
             }
 
             // ADMIN always has access (system role override)
-            if (userRole.toUpperCase() === Role.ADMIN) {
+            if (userRole.toUpperCase() === Role.OWNER) {
               return true;
             }
 

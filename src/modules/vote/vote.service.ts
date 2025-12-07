@@ -6,8 +6,7 @@ import { Note } from "../note/note.model";
 
 const createOrUpdateVote = async (payload: {
   noteId: Types.ObjectId | string;
-  voterUserId?: Types.ObjectId | string;
-  voterCompanyId?: Types.ObjectId | string;
+  voterUserId: Types.ObjectId | string;
   type: VoteType;
 }) => {
   // Verify note exists and is public
@@ -20,11 +19,12 @@ const createOrUpdateVote = async (payload: {
     throw new AppError(httpStatus.FORBIDDEN, "Can only vote on public published notes");
   }
 
-  const filter: any = { noteId: payload.noteId };
-  if (payload.voterUserId) filter.voterUserId = payload.voterUserId;
-  if (payload.voterCompanyId) filter.voterCompanyId = payload.voterCompanyId;
-
-  await Vote.findOneAndUpdate(filter, payload, { upsert: true, new: true });
+  // Upsert vote (update if exists, create if not)
+  await Vote.findOneAndUpdate(
+    { noteId: payload.noteId, voterUserId: payload.voterUserId },
+    { type: payload.type },
+    { upsert: true, new: true }
+  );
 
   // Recalculate counts
   const upCount = await Vote.countDocuments({ noteId: payload.noteId, type: "up" });
@@ -35,15 +35,11 @@ const createOrUpdateVote = async (payload: {
 };
 
 const getVotesByNote = async (noteId: string) => {
-  return Vote.find({ noteId }).populate("voterUserId voterCompanyId");
+  return Vote.find({ noteId }).populate("voterUserId");
 };
 
-const deleteVote = async (noteId: string, voterUserId?: string, voterCompanyId?: string) => {
-  const filter: any = { noteId };
-  if (voterUserId) filter.voterUserId = voterUserId;
-  if (voterCompanyId) filter.voterCompanyId = voterCompanyId;
-
-  await Vote.findOneAndDelete(filter);
+const deleteVote = async (noteId: string, voterUserId: string) => {
+  await Vote.findOneAndDelete({ noteId, voterUserId });
 
   // Recalculate counts
   const upCount = await Vote.countDocuments({ noteId, type: "up" });

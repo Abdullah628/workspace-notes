@@ -8,7 +8,7 @@ import { hashPassword, verifyPassword } from "../../utils/hash";
 import { Company } from "../company/company.model";
 
 const register = async (payload: {
-  companyName: string;
+  companyName?: string;
   name: string;
   email: string;
   password: string;
@@ -24,8 +24,29 @@ const register = async (payload: {
     );
   }
 
-  // Create company for the user
-  const company = await Company.create({ name: companyName });
+  // Extract email domain
+  const emailDomain = email.split("@")[1];
+
+  // Try to find existing company by domain
+  let company = await Company.findOne({ domain: emailDomain });
+  let role: "OWNER" | "MEMBER" = "MEMBER";
+
+  if (!company) {
+    // No company exists with this domain - create new one (user becomes OWNER)
+    if (!companyName) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Company name is required for first registration with this email domain"
+      );
+    }
+
+    company = await Company.create({
+      name: companyName,
+      domain: emailDomain,
+    });
+    role = "OWNER";
+  }
+  // If company exists, user automatically joins as MEMBER
 
   // Hash password
   const hashedPassword = await hashPassword(password);
@@ -36,13 +57,13 @@ const register = async (payload: {
     providerId: email,
   };
 
-  // Create user as OWNER with company linked
+  // Create user with appropriate role
   const user = await User.create({
     company: company._id,
     name,
     email,
     password: hashedPassword,
-    role: "OWNER",
+    role,
     auths: [credentialProvider],
   });
 

@@ -29,7 +29,7 @@ const createUser = async (payload: Partial<IUser>, logActor?: JwtPayload) => {
 
   if (!email) throw new AppError(httpStatus.BAD_REQUEST, "Email is required");
   if (!password) throw new AppError(httpStatus.BAD_REQUEST, "Password is required");
-  if (!company) throw new AppError(httpStatus.BAD_REQUEST, "Company is required");
+  // if (!company) throw new AppError(httpStatus.BAD_REQUEST, "Company is required");
 
   const isUserExist = await User.findOne({ email, company });
   if (isUserExist)

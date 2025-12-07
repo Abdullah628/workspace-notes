@@ -7,7 +7,7 @@ export const createUserZodSchema = z.object({
     companyName: z
       .string({ message: "Company name must be string" })
       .min(2, { message: "Company name must be at least 2 characters long." })
-      .max(100, { message: "Company name cannot exceed 100 characters." }),
+      .max(100, { message: "Company name cannot exceed 100 characters." }).optional(),
     
     name: z
       .string({ message: "Name must be string" })

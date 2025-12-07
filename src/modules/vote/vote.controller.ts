@@ -27,8 +27,8 @@ const getVotesByNote = catchAsync(async (req: Request, res: Response) => {
 
 const deleteVote = catchAsync(async (req: Request, res: Response) => {
   const { noteId } = req.params;
-  const { voterUserId, voterCompanyId } = req.body;
-  const result = await VoteServices.deleteVote(noteId, voterUserId, voterCompanyId);
+  const { voterUserId } = req.body;
+  const result = await VoteServices.deleteVote(noteId, voterUserId);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
